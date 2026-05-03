@@ -1,16 +1,6 @@
 import axios from "axios";
+import type { Movie } from "../types/movie";
 
-interface Movie {
-  id: number;
-  title?: string;
-  name?: string;
-  poster_path: string;
-  backdrop_path?: string;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average: number;
-  media_type: "movie" | "tv" | "person";
-}
 
 interface TMDBResponse {
   results: Movie[];

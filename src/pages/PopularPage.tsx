@@ -65,7 +65,7 @@ const PopularPage = () => {
             ) : (
               data?.pages.map((page) =>
                 page.results.map((movie: any) => (
-                  <Grid item key={movie.id} xs={6} sm={4} lg={2}>
+                  <Grid key={movie.id} xs={6} sm={4} lg={2}>
                     <MovieCard movie={movie} />
                   </Grid>
                 ))

@@ -1,25 +1,13 @@
 import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
-interface Movie {
-  id: number;
-  title?: string;
-  name?: string;
-  poster_path: string,
-  backdrop_path: string;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average: number;
-  media_type: "movie" | "tv" | "person";
-  profile_path?: string
-}
+import type { Movie } from "../types/movie";
 
 interface MovieCardProps {
   movie: Movie;
 }
 
 const MovieCard = ({ movie }: MovieCardProps) => {
-  const path: string | undefined = movie.poster_path || movie.profile_path
+  const path: string | undefined = movie.poster_path || movie.profile_path;
   const imageUrl = `https://image.tmdb.org/t/p/w500${path}`;
   const mediaType = movie.media_type || "movie";
 
@@ -34,13 +22,16 @@ const MovieCard = ({ movie }: MovieCardProps) => {
         padding: "10px",
         flexShrink: 0,
       }}
-      onClick={()=>navigate(`/movieDetail/${mediaType}/${movie.id}`)}
+      onClick={() => navigate(`/movieDetail/${mediaType}/${movie.id}`)}
     >
       <Box
         component="img"
         src={imageUrl}
         alt={movie.title || movie.name}
-        onError={(e) => e.target.src = "https://via.placeholder.com/150x225.png?text=No+Image"}
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = "https://via.placeholder.com/150x225.png?text=No+Image";
+        }}
         sx={{
           width: "100%",
           height: "225px",

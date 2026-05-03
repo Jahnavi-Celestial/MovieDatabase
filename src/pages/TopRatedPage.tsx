@@ -4,18 +4,7 @@ import MovieCard from "../components/MovieCard";
 import SidebarFilter from "../components/SidebarFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPopularOrTopRatedMovies } from "../api/tmdb";
-
-interface Movie {
-  id: number;
-  title?: string;
-  name?: string;
-  poster_path: string;
-  backdrop_path?: string;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average: number;
-  media_type: "movie" | "tv" | "person";
-}
+import type { Movie } from "../types/movie";
 
 const TopRatedPage = () => {
   const [filters, setFilters] = useState({
@@ -82,7 +71,7 @@ const TopRatedPage = () => {
             ) : (
               data?.pages.map((page) =>
                 page.results.map((movie: Movie) => (
-                  <Grid item key={movie.id} xs={6} sm={4} lg={2}>
+                  <Grid key={movie.id} xs={6} sm={4} lg={2}>
                     <MovieCard movie={movie} />
                   </Grid>
                 )),
