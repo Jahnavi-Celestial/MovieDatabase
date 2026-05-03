@@ -1,75 +1,119 @@
-import React, { useState } from 'react';
-import { 
-  AppBar, 
-  Button, 
-  Box, 
-  InputBase,
-  Menu,
-  MenuItem
-} from '@mui/material';
-import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
-import { NavLink } from 'react-router-dom';
-
-import logo from '../assets/logo.svg'
-
+import React, { useState } from "react";
+import { AppBar, Button, Box, InputBase, Menu, MenuItem, Toolbar } from "@mui/material";
+import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
+import { NavLink, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.svg";
+import { useMovieContext } from "../context/MovieContext";
 
 const Navbar = () => {
-    const [showSearch, setShowSearch] = useState(false);
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const openMenu = Boolean(anchorEl);
+  const {searchQuery, setSearchQuery, showSearch, setShowSearch} = useMovieContext()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+  const navigate = useNavigate();
 
-    const toggleSearch = () => {
-        setShowSearch((prev) => !prev);
-    };
+  const toggleSearch = (): void => {
+    setShowSearch(!showSearch);
+  };
 
-    const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>): void => {
+    setAnchorEl(event.currentTarget);
+  };
 
-    const handleCloseMenu = () => {
-        setAnchorEl(null);
-    };
-  
+  const handleCloseMenu = (): void => {
+    setAnchorEl(null);
+  };
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      navigate(`/serachDetail/:${searchQuery}`);
+    }
+  }
+
   return (
     <>
-      <AppBar position="fixed" sx={{ backgroundColor: '#032541', flexGrow: 1, flexDirection: {xs: 'column', md: 'row'}, justifyContent: {xs: "start", md: "space-between"}, alignItems: "center", padding: "10px 40px", }}>
-        <Box sx={{display: "flex", alignItems: "center", gap: "40px"}}>
-            <NavLink to="/">
-                <img src={logo} width='200px'/>
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "#032541",
+          zIndex: 1201,
+        }}
+      >
+        <Toolbar sx={{ justifyContent: "space-between", padding: {xs: "10px 0 0 0", md: "0 40px"}, flexDirection: {xs: "column", md: "row"}}}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "30px" }}>
+            <NavLink to="/" style={{ display: "flex", alignItems: "center" }}>
+              <img src={logo} width="154px" height="20px" alt="TMDB Logo" />
             </NavLink>
-            <Box sx={{ color: '#fff', textTransform: 'none', fontWeight: 600 }} onMouseEnter={handleOpenMenu}>
-                Movie
+
+            <Box
+              sx={{ 
+                color: "#fff", 
+                cursor: "pointer", 
+                fontWeight: 600,
+                "&:hover": { color: "rgba(255,255,255,0.7)" }
+              }}
+              onMouseEnter={handleOpenMenu}
+            >
+              Movies
             </Box>
 
             <Menu
-                    anchorEl={anchorEl}
-                    open={openMenu}
-                    onClose={handleCloseMenu}
-                    slotProps={{list: {onMouseLeave: handleCloseMenu}}}
-                    sx={{ 
-                        '& .MuiPaper-root': { width: '150px', mt: 1 } 
-                    }}
-                >
-                    <MenuItem onClick={handleCloseMenu}>Popular</MenuItem>
-                    <MenuItem onClick={handleCloseMenu}>Top Rated</MenuItem>
-                </Menu>
-        </Box>
-        <Box>
-            <Button sx={{ color: '#fff', textTransform: 'none', fontWeight: 600 }}>
-                Login
+              anchorEl={anchorEl}
+              open={openMenu}
+              onClose={handleCloseMenu}
+              slotProps={{ 
+                list: { onMouseLeave: handleCloseMenu } 
+              }}
+            >
+              <MenuItem onClick={() => { navigate("/popular"); handleCloseMenu(); }}>Popular</MenuItem>
+              <MenuItem onClick={() => { navigate("/topRated"); handleCloseMenu(); }}>Top Rated</MenuItem>
+            </Menu>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <Button sx={{ color: "#fff", textTransform: "none", fontWeight: 600 }} onClick={()=>navigate("/auth")}>
+              Login
             </Button>
-            <Button sx={{ color: '#fff', textTransform: 'none', fontWeight: 600 }}>
-                <SearchTwoToneIcon onClick={toggleSearch}/>
+            <Button onClick={toggleSearch} sx={{ color: "white", minWidth: "auto" }}>
+              <SearchTwoToneIcon fontSize="medium" />
             </Button>
-        </Box>
+          </Box>
+        </Toolbar>
       </AppBar>
-      {
-        showSearch && <InputBase
-              fullWidth
-              placeholder="Search for a movie..."
-              sx={{ fontSize: '1.1rem', fontStyle: 'italic', padding: "5px 30px"}}
-        />
-      }
+      <Toolbar />
+
+      {showSearch && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: "64px", 
+            left: 0,
+            width: "100%",
+            backgroundColor: "white",
+            borderBottom: "1px solid #ddd",
+            zIndex: 1200,
+            animation: "slideDown 0.3s ease",
+            "@keyframes slideDown": {
+              "0%": { transform: "translateY(-100%)" },
+              "100%": { transform: "translateY(0)" }
+            }
+          }}
+        >
+          <InputBase
+            fullWidth
+            autoFocus
+            placeholder="Search for a movie, tv show, person..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            sx={{
+              padding: "10px 40px",
+              fontSize: "1.1rem",
+              fontStyle: "italic",
+              color: "#333"
+            }}
+          />
+        </Box>
+      )}
     </>
   );
 };
