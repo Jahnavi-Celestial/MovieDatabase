@@ -32,12 +32,12 @@ const Navbar = () => {
   
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: '#032541', flexGrow: 1, flexDirection: {xs: 'column', md: 'row'}, justifyContent: {xs: "start", md: "space-between"}, alignItems: "center", padding: "10px 40px", }}>
+      <AppBar position="fixed" sx={{ backgroundColor: '#032541', flexGrow: 1, flexDirection: {xs: 'column', md: 'row'}, justifyContent: {xs: "start", md: "space-between"}, alignItems: "center", padding: "10px 40px", }}>
         <Box sx={{display: "flex", alignItems: "center", gap: "40px"}}>
             <NavLink to="/">
                 <img src={logo} width='200px'/>
             </NavLink>
-            <Box sx={{ color: '#fff', textTransform: 'none', fontWeight: 600 }} onMouseEnter={handleOpenMenu} >
+            <Box sx={{ color: '#fff', textTransform: 'none', fontWeight: 600 }} onMouseEnter={handleOpenMenu}>
                 Movie
             </Box>
 
@@ -45,7 +45,7 @@ const Navbar = () => {
                     anchorEl={anchorEl}
                     open={openMenu}
                     onClose={handleCloseMenu}
-                    MenuListProps={{ onMouseLeave: handleCloseMenu }} 
+                    slotProps={{list: {onMouseLeave: handleCloseMenu}}}
                     sx={{ 
                         '& .MuiPaper-root': { width: '150px', mt: 1 } 
                     }}

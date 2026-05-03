@@ -1,8 +1,11 @@
-
+import { Box } from "@mui/material"
+import Hero from "../components/Hero"
 
 const Home = () => {
   return (
-    <div>Home</div>
+    <Box>
+        <Hero/>
+    </Box>
   )
 }
 
