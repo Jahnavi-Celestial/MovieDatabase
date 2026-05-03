@@ -71,7 +71,7 @@ const TopRatedPage = () => {
             ) : (
               data?.pages.map((page) =>
                 page.results.map((movie: Movie) => (
-                  <Grid key={movie.id} xs={6} sm={4} lg={2}>
+                  <Grid key={movie.id} size={{ xs: 6, sm: 4, lg: 2 }}>
                     <MovieCard movie={movie} />
                   </Grid>
                 )),
