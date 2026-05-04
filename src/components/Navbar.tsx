@@ -4,12 +4,25 @@ import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
 import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import { useMovieContext } from "../context/MovieContext";
+import { getAccountDetails } from "../api/tmdb"; 
+import { useQuery } from "@tanstack/react-query";
 
 const Navbar = () => {
-  const {searchQuery, setSearchQuery, showSearch, setShowSearch} = useMovieContext()
+  const { searchQuery, setSearchQuery, showSearch, setShowSearch } = useMovieContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
+  const sessionId = localStorage.getItem("tmdb_session_id");
+
+  const { data: userData } = useQuery({
+    queryKey: ["authUser", sessionId],
+    queryFn: () => getAccountDetails(sessionId!),
+    enabled: !!sessionId,
+    retry: false,
+  });
+
+  const username: string = userData?.username;
 
   const toggleSearch = (): void => {
     setShowSearch(!showSearch);
@@ -31,26 +44,15 @@ const Navbar = () => {
 
   return (
     <>
-      <AppBar
-        position="fixed"
-        sx={{
-          backgroundColor: "#032541",
-          zIndex: 1201,
-        }}
-      >
-        <Toolbar sx={{ justifyContent: "space-between", padding: {xs: "10px 0 0 0", md: "0 40px"}, flexDirection: {xs: "column", md: "row"}}}>
+      <AppBar position="fixed" sx={{ backgroundColor: "#032541", zIndex: 1201 }}>
+        <Toolbar sx={{ justifyContent: "space-between", padding: { xs: "10px 0 0 0", md: "0 40px" }, flexDirection: { xs: "column", md: "row" } }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "30px" }}>
             <NavLink to="/" style={{ display: "flex", alignItems: "center" }}>
               <img src={logo} width="154px" height="20px" alt="TMDB Logo" />
             </NavLink>
 
             <Box
-              sx={{ 
-                color: "#fff", 
-                cursor: "pointer", 
-                fontWeight: 600,
-                "&:hover": { color: "rgba(255,255,255,0.7)" }
-              }}
+              sx={{ color: "#fff", cursor: "pointer", fontWeight: 600, "&:hover": { color: "rgba(255,255,255,0.7)" } }}
               onMouseEnter={handleOpenMenu}
             >
               Movies
@@ -60,9 +62,7 @@ const Navbar = () => {
               anchorEl={anchorEl}
               open={openMenu}
               onClose={handleCloseMenu}
-              slotProps={{ 
-                list: { onMouseLeave: handleCloseMenu } 
-              }}
+              slotProps={{ list: { onMouseLeave: handleCloseMenu } }}
             >
               <MenuItem onClick={() => { navigate("/popular"); handleCloseMenu(); }}>Popular</MenuItem>
               <MenuItem onClick={() => { navigate("/topRated"); handleCloseMenu(); }}>Top Rated</MenuItem>
@@ -70,9 +70,22 @@ const Navbar = () => {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            <Button sx={{ color: "#fff", textTransform: "none", fontWeight: 600 }} onClick={()=>navigate("/auth")}>
-              Login
-            </Button>
+            {username ? (
+              <Button 
+                sx={{ color: "#fff", textTransform: "none", fontWeight: 600 }} 
+                onClick={() => navigate("/watchList")}
+              >
+                {username}
+              </Button>
+            ) : (
+              <Button 
+                sx={{ color: "#fff", textTransform: "none", fontWeight: 600 }} 
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Button>
+            )}
+
             <Button onClick={toggleSearch} sx={{ color: "white", minWidth: "auto" }}>
               <SearchTwoToneIcon fontSize="medium" />
             </Button>
@@ -82,22 +95,7 @@ const Navbar = () => {
       <Toolbar />
 
       {showSearch && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: "64px", 
-            left: 0,
-            width: "100%",
-            backgroundColor: "white",
-            borderBottom: "1px solid #ddd",
-            zIndex: 1200,
-            animation: "slideDown 0.3s ease",
-            "@keyframes slideDown": {
-              "0%": { transform: "translateY(-100%)" },
-              "100%": { transform: "translateY(0)" }
-            }
-          }}
-        >
+        <Box sx={{ position: "fixed", top: "64px", left: 0, width: "100%", backgroundColor: "white", borderBottom: "1px solid #ddd", zIndex: 1200 }}>
           <InputBase
             fullWidth
             autoFocus
@@ -105,12 +103,7 @@ const Navbar = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            sx={{
-              padding: "10px 40px",
-              fontSize: "1.1rem",
-              fontStyle: "italic",
-              color: "#333"
-            }}
+            sx={{ padding: "10px 40px", fontSize: "1.1rem", fontStyle: "italic", color: "#333" }}
           />
         </Box>
       )}

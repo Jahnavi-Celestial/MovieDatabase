@@ -16,8 +16,20 @@ import { fetchGenres } from "../api/tmdb";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
+interface Filters{
+  sort_by: string,
+  with_genres: string,
+  "vote_average.gte": number,
+  "vote_average.lte": number,
+  "vote_count.gte": number,
+}
 
-const SidebarFilter = ({setFilters, initialSort,}: {setFilters: (filters: any) => void; initialSort: string;}) => {
+interface Genre{
+  id: number,
+  name: string
+}
+
+const SidebarFilter = ({setFilters, initialSort,}: {setFilters: (filters: Filters) => void; initialSort: string;}) => {
   const { data: genres = [] } = useQuery({
     queryKey: ["genres"],
     queryFn: fetchGenres,
@@ -84,7 +96,7 @@ const SidebarFilter = ({setFilters, initialSort,}: {setFilters: (filters: any) =
             Genres
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {genres.map((genre: any) => (
+            {genres.map((genre: Genre) => (
               <Chip
                 key={genre.id}
                 label={genre.name}

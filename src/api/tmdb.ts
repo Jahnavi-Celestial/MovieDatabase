@@ -10,6 +10,64 @@ interface TMDBResponse {
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
+export const getRequestToken = async () => {
+  const { data } = await axios.get(`${BASE_URL}/authentication/token/new?api_key=${API_KEY}`);
+  return data.request_token;
+};
+
+export const validateTokenWithLogin = async (username: string, password: string, requestToken: string) => {
+  await axios.post(`${BASE_URL}/authentication/token/validate_with_login?api_key=${API_KEY}`, {
+    username,
+    password,
+    request_token: requestToken,
+  });
+};
+
+export const createSession = async (requestToken: string) => {
+  const { data } = await axios.post(`${BASE_URL}/authentication/session/new?api_key=${API_KEY}`, {
+    request_token: requestToken,
+  });
+  return data.session_id;
+};
+
+export const getAccountDetails = async (sessionId: string) => {
+  const { data } = await axios.get(`${BASE_URL}/account?api_key=${API_KEY}&session_id=${sessionId}`);
+  return data; 
+};
+
+export const getWatchlist = async (accountId: number, sessionId: string, type: 'movies' | 'tv') => {
+  const endpoint = type === 'movies' ? 'watchlist/movies' : 'watchlist/tv';
+  const { data } = await axios.get(
+    `${BASE_URL}/account/${accountId}/${endpoint}?api_key=${API_KEY}&session_id=${sessionId}&sort_by=created_at.asc`
+  );
+  return data.results;
+};
+
+export const getAccountStates = async (mediaType: string, id: string, sessionId: string) => {
+  const { data } = await axios.get(
+    `${BASE_URL}/${mediaType}/${id}/account_states?api_key=${API_KEY}&session_id=${sessionId}`
+  );
+  return data;
+};
+
+export const addToWatchlist = async (
+  accountId: number,
+  sessionId: string,
+  mediaType: string,
+  mediaId: number,
+  watchlist: boolean = true 
+) => {
+  const { data } = await axios.post(
+    `${BASE_URL}/account/${accountId}/watchlist?api_key=${API_KEY}&session_id=${sessionId}`,
+    {
+      media_type: mediaType,
+      media_id: mediaId,
+      watchlist: watchlist,
+    }
+  );
+  return data;
+};
+
 export const fetchTrending = async ( timeWindow: "day" | "week",): Promise<TMDBResponse> => {
   const { data } = await axios.get(
     `${BASE_URL}/trending/all/${timeWindow}?api_key=${API_KEY}`,

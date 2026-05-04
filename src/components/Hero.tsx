@@ -7,11 +7,15 @@ const Hero = () => {
   const {searchQuery, setSearchQuery, setShowSearch} = useMovieContext();
   const navigate = useNavigate();
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-    if (e.key === "Enter" && searchQuery.trim() !== "") {
+  const handleSearch = () => {
       setSearchQuery(searchQuery);
       setShowSearch(true)
       navigate(`/serachDetail/${searchQuery}`);
+  };
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+    if (e.key === "Enter" && searchQuery.trim() !== "") {
+      handleSearch()
     }
   }
 
@@ -65,7 +69,7 @@ const Hero = () => {
             background: `linear-gradient(to right, rgba(30, 213, 169, 1) 0%, rgba(1, 180, 228, 1) 100%)`,
             padding: "0 30px",
           }}
-          onClick={() => navigate("/searchDetail")}
+          onClick={handleSearch}
         >
           Search
         </Button>
