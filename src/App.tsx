@@ -40,7 +40,7 @@ const router = createBrowserRouter([
     ]
   }
 ],{
-  basename: "/TMDB-TS" 
+  basename: "/MovieDatabase" 
 })
 
 const App = () => {
