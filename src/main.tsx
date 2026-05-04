@@ -6,8 +6,8 @@ import { MovieProvider } from "./context/MovieContext"
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-  <MovieProvider>
-    <App />
-  </MovieProvider>
+    <MovieProvider>
+      <App />
+    </MovieProvider>
   </StrictMode>,
 )
