@@ -1,32 +1,37 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Box, Typography, CircularProgress, Stack, Paper } from "@mui/material";
+import { Box, Typography, CircularProgress, Stack, Paper, Pagination } from "@mui/material";
 import { searchMovies } from "../api/tmdb";
 import type { Movie } from "../types/movie";
 
-
 const SearchDetail = () => {
   const { input } = useParams();
-  const { data, isLoading } = useQuery({
-    queryKey: ["search", input],
-    queryFn: () => searchMovies(input || ""),
-    enabled: !!input, //when query is not present dont fetch
+  const [page, setPage] = useState(1); 
+  const navigate = useNavigate();
+
+  const { data, isLoading, isPlaceholderData } = useQuery({
+    queryKey: ["search", input, page],
+    queryFn: () => searchMovies(input || "", page), 
+    enabled: !!input,
+    placeholderData: (previousData) => previousData, 
   });
-  const navigate = useNavigate()
+
+  const handleChange = (e: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
     <Box sx={{ padding: { xs: "20px", md: "40px 100px" }, mt: "64px" }}>
-      
-
-      <Stack spacing={3}>
-        {data?.map((item: Movie) => (
+      <Stack spacing={3} sx={{ opacity: isPlaceholderData ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+        {data?.results?.map((item: Movie) => (
           <Paper
-            key={item.id} 
+            key={item.id}
             elevation={3}
-            sx={{ display: "flex", borderRadius: "8px", overflow: "hidden", height: { xs: "auto", md: "200px" } }}
-            onClick={()=>navigate(`/movieDetail/${item.media_type}/${item.id}`)}
+            sx={{ display: "flex", borderRadius: "8px", overflow: "hidden", height: { xs: "auto", md: "200px" }, cursor: 'pointer' }}
+            onClick={() => navigate(`/movieDetail/${item.media_type}/${item.id}`)}
           >
             <Box
               component="img"
@@ -60,6 +65,15 @@ const SearchDetail = () => {
           </Paper>
         ))}
       </Stack>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Pagination 
+          count={data?.total_pages || 1} 
+          page={page} 
+          onChange={handleChange} 
+          color="primary" 
+          disabled={isPlaceholderData}
+        />
+      </Box>
     </Box>
   );
 };

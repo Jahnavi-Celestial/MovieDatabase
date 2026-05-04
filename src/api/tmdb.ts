@@ -82,12 +82,13 @@ export const fetchPopular = async (type: "movie" | "tv" | "person",): Promise<TM
   return data;
 };
 
-export const searchMovies = async (query: string) => {
+export const searchMovies = async (query: string, page: number = 1) => {
   const { data } = await axios.get(
-    `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`,
+    `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}&page=${page}`,
   );
-  return data.results;
+  return data; 
 };
+
 
 export const fetchDetail = async (type: string, id: string) => {
   if (!id || !type) throw new Error("Missing params");
