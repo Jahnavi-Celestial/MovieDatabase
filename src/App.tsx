@@ -39,7 +39,9 @@ const router = createBrowserRouter([
       // }
     ]
   }
-])
+],{
+  basename: "/TMDB-TS" 
+})
 
 const App = () => {
   const queryClient = new QueryClient()
