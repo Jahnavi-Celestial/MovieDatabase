@@ -11,3 +11,13 @@ export interface Movie {
   profile_path?: string;
   overview: string
 }
+
+//for filters in popular and toprated page
+export interface MovieFilters {
+  sort_by?: 'popularity.desc' | 'popularity.asc' | 'vote_average.desc' | 'vote_average.asc';
+  'vote_count.gte'?: number;
+  with_genres?: string;
+  year?: number;
+  primary_release_year?: number;
+  [key: string]: string | number | boolean | undefined;
+}

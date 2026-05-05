@@ -4,9 +4,10 @@ import MovieCard from "../components/MovieCard";
 import SidebarFilter from "../components/SidebarFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPopularOrTopRatedMovies } from "../api/tmdb";
+import { Movie, MovieFilters } from "../types/movie";
 
 const PopularPage = () => {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<MovieFilters>({
     sort_by: "popularity.desc",
     with_genres: "",
     "vote_average.gte": 1,
@@ -64,7 +65,7 @@ const PopularPage = () => {
               <Typography sx={{ ml: 2 }}>Loading...</Typography>
             ) : (
               data?.pages.map((page) =>
-                page.results.map((movie: any) => (
+                page.results.map((movie: Movie) => (
                   <Grid key={movie.id} size={{ xs: 6, sm: 4, lg: 2 }}>
                     <MovieCard movie={movie} />
                   </Grid>

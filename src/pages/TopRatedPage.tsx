@@ -4,10 +4,10 @@ import MovieCard from "../components/MovieCard";
 import SidebarFilter from "../components/SidebarFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchPopularOrTopRatedMovies } from "../api/tmdb";
-import type { Movie } from "../types/movie";
+import type { Movie, MovieFilters } from "../types/movie";
 
 const TopRatedPage = () => {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<MovieFilters>({
     sort_by: "vote_average.desc",
     with_genres: "",
     "vote_average.gte": 1,

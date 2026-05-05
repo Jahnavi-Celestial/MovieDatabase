@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Movie } from "../types/movie";
+import type { Movie, MovieFilters } from "../types/movie";
 
 
 interface TMDBResponse {
@@ -105,23 +105,13 @@ export const fetchGenres = async () => {
   return data.genres;
 };
 
-interface MovieFilters {
-  sort_by?: 'popularity.desc' | 'popularity.asc' | 'vote_average.desc' | 'vote_average.asc';
-  'vote_count.gte'?: number;
-  with_genres?: string;
-  year?: number;
-  primary_release_year?: number;
-  [key: string]: string | number | boolean | undefined;
-}
-
-
 export const fetchPopularOrTopRatedMovies = async ({pageParam = 1,filters} : {pageParam: number, filters: MovieFilters}) => {
   const params = new URLSearchParams({
     api_key: API_KEY,
     sort_by: 'vote_average.desc',
     'vote_count.gte': 300,    
     ...filters,            
-    page: pageParam,               
+    page: pageParam.toString(),               
   });
 
   try {
