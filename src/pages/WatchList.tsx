@@ -8,28 +8,35 @@ import {
   IconButton,
   Paper,
   Avatar,
+  Button,
 } from "@mui/material";
-import { getAccountDetails, getWatchlist, addToWatchlist } from "../api/tmdb"; 
+import { useNavigate } from "react-router-dom";
+import { Logout } from "@mui/icons-material";
+import { getAccountDetails, getWatchlist, addToWatchlist } from "../api/tmdb";
 import type { Movie } from "../types/movie";
 import { DeleteOutlined } from "@mui/icons-material";
 
 const Watchlist = () => {
   const [watchlist, setWatchlist] = useState<Movie[]>([]);
   const [mediaType, setMediaType] = useState<"movies" | "tv">("movies");
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [userData, setUserData] = useState<{
     username: string;
     id: number;
   } | null>(null);
 
+  const navigate = useNavigate();
   const sessionId = localStorage.getItem("tmdb_session_id");
 
   const fetchMyList = async () => {
+    setIsLoading(true)
     if (!sessionId) return;
     try {
       const account = await getAccountDetails(sessionId);
       setUserData({ username: account.username, id: account.id });
       const list = await getWatchlist(account.id, sessionId, mediaType);
       setWatchlist(list);
+      setIsLoading(false)
     } catch (err) {
       console.error("Error loading watchlist data", err);
     }
@@ -39,8 +46,13 @@ const Watchlist = () => {
     fetchMyList();
   }, [mediaType, sessionId]);
 
-  
-  const handleDelete = async (movieId: number) => {
+  const handleLogout = () => {
+    localStorage.removeItem("tmdb_session_id");
+    navigate("/");
+  };
+
+  const handleDelete = async (e: React.MouseEvent, movieId: number) => {
+    e.stopPropagation();
     if (!sessionId || !userData) return;
     try {
       await addToWatchlist(
@@ -48,13 +60,23 @@ const Watchlist = () => {
         sessionId,
         mediaType === "movies" ? "movie" : "tv",
         movieId,
-        false, 
+        false,
       );
-
       setWatchlist((prev) => prev.filter((item) => item.id !== movieId));
     } catch (error) {
       console.error("Failed to delete:", error);
     }
+  };
+
+  const handleNavigate = (id: number) => {
+    const type = mediaType === "movies" ? "movie" : "tv";
+    navigate(`/movieDetail/${type}/${id}`);
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB");
   };
 
   return (
@@ -82,10 +104,28 @@ const Watchlist = () => {
         >
           {userData?.username?.charAt(0).toUpperCase() || "U"}
         </Avatar>
-        <Typography variant="h4">{userData?.username || "User"}</Typography>
+        <Box>
+          <Typography variant="h4">{userData?.username || "User"}</Typography>
+          <Button
+            variant="text"
+            color="inherit"
+            startIcon={<Logout />}
+            onClick={handleLogout}
+            sx={{
+              mt: 1,
+              textTransform: "none",
+              opacity: 0.8,
+              "&:hover": {
+                opacity: 1,
+                backgroundColor: "rgba(255,255,255,0.1)",
+              },
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
       </Box>
 
-      
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Typography variant="h5" align="center" gutterBottom>
           WatchList
@@ -107,22 +147,33 @@ const Watchlist = () => {
           </ToggleButtonGroup>
         </Box>
 
-        {watchlist.length === 0 ? (
+        {isLoading ? (
+          <Typography variant="h4" sx={{ textAlign: "center" }}>
+            Loading...
+          </Typography>
+        ) : watchlist.length === 0 ? (
           <Typography align="center" color="text.secondary" sx={{ mt: 4 }}>
             Nothing To Show!
           </Typography>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {watchlist.map((item) => (
+            {watchlist.map((item: Movie) => (
               <Paper
                 key={item.id}
                 elevation={1}
+                onClick={() => handleNavigate(item.id)}
                 sx={{
                   display: "flex",
                   overflow: "hidden",
                   borderRadius: 2,
                   border: "1px solid #e3e3e3",
                   position: "relative",
+                  cursor: "pointer",
+                  transition: "transform 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.01)",
+                    borderColor: "#01b4e4",
+                  },
                 }}
               >
                 <Box
@@ -131,11 +182,11 @@ const Watchlist = () => {
                   sx={{ width: 100, height: 150, objectFit: "cover" }}
                 />
                 <Box sx={{ p: 2, flex: 1, pr: 6 }}>
-                  <Typography variant="subtitle1">
+                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
                     {item.title || item.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {item.release_date || item.first_air_date}
+                    {formatDate(item.release_date || item.first_air_date || "")}
                   </Typography>
                   <Typography
                     variant="body2"
@@ -152,11 +203,12 @@ const Watchlist = () => {
                   </Typography>
                 </Box>
                 <IconButton
-                  onClick={() => handleDelete(item.id)}
+                  onClick={(e) => handleDelete(e, item.id)}
                   sx={{
                     position: "absolute",
                     right: 10,
                     top: 10,
+                    zIndex: 2,
                     "&:hover": { color: "#d40242" },
                   }}
                   title="Remove from watchlist"

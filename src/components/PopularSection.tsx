@@ -85,10 +85,10 @@ const PopularSection = () => {
         }}
       >
         {isLoading ? (
-          <Typography variant="h4">Loading...</Typography>
+          <Typography variant="h4" sx={{textAlign: "center"}}>Loading...</Typography>
         ) : (
           data?.results.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
+            <MovieCard key={movie.id} movie={movie} type={popularType}/>
           ))
         )}
       </Box>

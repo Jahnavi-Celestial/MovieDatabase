@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, Tooltip } from "@mui/material";
 import {
   addToWatchlist,
   fetchDetail,
@@ -8,6 +8,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded"; 
 
 interface Genre {
   id: number;
@@ -29,50 +30,42 @@ const MovieDetail = () => {
     queryKey: ["accountStates", type, id],
     queryFn: () =>
       getAccountStates(type === "tv" ? "tv" : "movie", id!, sessionId!),
-    enabled: !!sessionId && !!id && !!type,
+    enabled: !!sessionId && !!id && !!type && type !== "person", 
   });
 
   const isInWatchlist = accountStates?.watchlist || false;
 
-  const { mutate: toggleWatchlist } = useMutation(
-    {
-      mutationFn: async () => {
-        if (!sessionId) throw new Error("No Session");
-        const account = await getAccountDetails(sessionId);
-        return addToWatchlist(
-          account.id,
-          sessionId,
-          type === "tv" ? "tv" : "movie",
-          Number(id),
-          !isInWatchlist,
-        );
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["accountStates", type, id],
-        });
-        queryClient.invalidateQueries({ queryKey: ["watchlist"] });
-      },
-      onError: () => {
-        alert("Something went wrong. Please try again.");
-      },
+  const { mutate: toggleWatchlist } = useMutation({
+    mutationFn: async () => {
+      if (!sessionId) throw new Error("No Session");
+      const account = await getAccountDetails(sessionId);
+      return addToWatchlist(
+        account.id,
+        sessionId,
+        type === "tv" ? "tv" : "movie",
+        Number(id),
+        !isInWatchlist
+      );
     },
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["accountStates", type, id] });
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+    },
+  });
 
-  const handleWatchlistClick = () => {
-    if (!sessionId) {
-      alert("Please log in to add to your watchlist!");
-      return;
-    }
-    toggleWatchlist();
+  if (isLoading) return <Typography sx={{ mt: 10, textAlign: "center" }}>Loading...</Typography>;
+  if (!data) return null;
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB"); 
   };
 
-  if (isLoading)
-    return (
-      <Typography sx={{ mt: 10, textAlign: "center" }}>Loading...</Typography>
-    );
-
-  const bgImage = `https://image.tmdb.org/t/p/original${data.backdrop_path}`;
+  const isPerson = type === "person";
+  const bgImage = data.backdrop_path 
+    ? `https://image.tmdb.org/t/p/original${data.backdrop_path}` 
+    : (isPerson ? `https://image.tmdb.org/t/p/original${data.profile_path}` : `https://image.tmdb.org/t/p/original${data.poster_path}`);
 
   return (
     <Box
@@ -82,103 +75,81 @@ const MovieDetail = () => {
         position: "relative",
         display: "flex",
         alignItems: "center",
-        backgroundImage: `linear-gradient(to right, rgba(10, 10, 10, 1) 20%, rgba(10, 10, 10, 0.5) 100%), url(${bgImage})`,
+        backgroundColor: "#847f7f",
+        backgroundImage: bgImage ? `linear-gradient(to right, rgba(10, 10, 10, 1) 20%, rgba(10, 10, 10, 0.5) 100%), url(${bgImage})` : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
         color: "white",
         pt: { xs: "80px", md: "0px" },
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          padding: { xs: "20px", md: "40px 80px" },
-          gap: "40px",
-          width: "100%",
-          maxWidth: "1400px",
-          margin: "0 auto",
-        }}
-      >
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, padding: { xs: "20px", md: "40px 80px" }, gap: "40px", width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
+        
         <Box
           component="img"
           src={bgImage}
-          alt={data.title}
-          sx={{
-            width: { xs: "100%", sm: "300px" },
-            borderRadius: "12px",
-            boxShadow: "0 0 20px rgba(0,0,0,0.5)",
-          }}
+          alt={data.title || data.name}
+          sx={{ width: { xs: "100%", sm: "300px" }, borderRadius: "12px", boxShadow: "0 0 20px rgba(0,0,0,0.5)" }}
         />
+
         <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <Typography
-            variant="h3"
-            sx={{ fontWeight: "bold", fontSize: { xs: "2rem", md: "3rem" } }}
-          >
+          <Typography variant="h3" sx={{ fontWeight: "bold", fontSize: { xs: "2rem", md: "3rem" } }}>
             {data.title || data.name}
             <Box component="span" sx={{ opacity: 0.7, fontWeight: 400, ml: 1 }}>
-              (
-              {new Date(data.release_date || data.first_air_date).getFullYear()}
-              )
+              ({new Date(data.release_date || data.first_air_date || data.birthday).getFullYear()})
             </Box>
           </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ flexWrap: "wrap", gap: "10px" }}
-          >
-            <Typography>{data.release_date || data.first_air_date}</Typography>
-            <Typography>•</Typography>
-            <Typography>
-              {data.genres?.map((g: Genre) => g.name).join(", ")}
-            </Typography>
-            <Typography>•</Typography>
-            <Typography>
-              {data.runtime
-                ? `${Math.floor(data.runtime / 60)}h ${data.runtime % 60}m`
-                : "N/A"}
-            </Typography>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", alignItems: "center" }}>
+            <Typography>{formatDate(data.release_date || data.first_air_date || data.birthday)}</Typography>
+            {!isPerson && (
+              <>
+                <Typography>•</Typography>
+                <Typography>{data.genres?.map((g: Genre) => g.name).join(", ")}</Typography>
+                <Typography>•</Typography>
+                <Typography>{data.runtime ? `${Math.floor(data.runtime / 60)}h ${data.runtime % 60}m` : "N/A"}</Typography>
+              </>
+            )}
           </Stack>
 
-          <Box sx={{ my: 2 }}>
-            <Box
-              onClick={handleWatchlistClick}
-              sx={{
-                width: "45px",
-                height: "45px",
-                borderRadius: "50%",
-                bgcolor: isInWatchlist ? "#d40242" : "#032541",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                border: "1px solid #fff",
-                "&:hover": { bgcolor: isInWatchlist ? "#ff0055" : "#01b4e4" },
-              }}
-            >
-              <AddCircleRoundedIcon sx={{ color: "white" }} />
+          {!isPerson && (
+            <Box sx={{ my: 2 }}>
+              <Tooltip title={!sessionId ? "Please login to add to your watchlist" : ""} >
+                <Box
+                  onClick={() => sessionId && toggleWatchlist()}
+                  sx={{
+                    width: "45px",
+                    height: "45px",
+                    borderRadius: "50%",
+                    bgcolor: isInWatchlist ? "#d40242" : "#032541",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: sessionId ? "pointer" : "",
+                    opacity: sessionId ? 1 : 0.6,
+                    transition: "all 0.3s ease",
+                    border: "1px solid #fff",
+                    "&:hover": { bgcolor: sessionId ? (isInWatchlist ? "#ff0055" : "#01b4e4") : "#032541" },
+                  }}
+                >
+                  {isInWatchlist ? (
+                    <CheckCircleRoundedIcon sx={{ color: "white" }} />
+                  ) : (
+                    <AddCircleRoundedIcon sx={{ color: "white" }} />
+                  )}
+                </Box>
+              </Tooltip>
             </Box>
-          </Box>
-
-          {data.tagline && (
-            <Typography
-              sx={{ fontStyle: "italic", opacity: 0.8, fontSize: "1.1rem" }}
-            >
-              "{data.tagline}"
-            </Typography>
           )}
+
+          {data.tagline && <Typography sx={{ fontStyle: "italic", opacity: 0.8, fontSize: "1.1rem" }}>"{data.tagline}"</Typography>}
 
           <Box sx={{ mt: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-              Overview
+              {isPerson ? "Biography" : "Overview"}
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{ lineHeight: 1.6, maxWidth: "800px" }}
-            >
-              {data.overview}
+            <Typography variant="body1" sx={{ lineHeight: 1.6, maxWidth: "800px" }}>
+              {data.overview || data.biography || "No description available."}
             </Typography>
           </Box>
         </Box>

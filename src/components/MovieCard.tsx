@@ -1,17 +1,20 @@
 import { Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import type { Movie } from "../types/movie";
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: any;
+  type?: string;
 }
 
-const MovieCard = ({ movie }: MovieCardProps) => {
-  const path: string | undefined = movie.poster_path || movie.profile_path;
-  const imageUrl = `https://image.tmdb.org/t/p/w500${path}`;
-  const mediaType = movie.media_type || "movie";
-
+const MovieCard = ({ movie, type }: MovieCardProps) => {
   const navigate = useNavigate();
+  
+  const path = movie.poster_path || movie.profile_path;
+  const imageUrl = path 
+    ? `https://image.tmdb.org/t/p/w500${path}` 
+    : "https://via.placeholder.com/150x225.png?text=No+Image";
+
+  const mediaType = type || movie.media_type || "movie";
 
   return (
     <Box
@@ -28,10 +31,6 @@ const MovieCard = ({ movie }: MovieCardProps) => {
         component="img"
         src={imageUrl}
         alt={movie.title || movie.name}
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = "https://via.placeholder.com/150x225.png?text=No+Image";
-        }}
         sx={{
           width: "100%",
           height: "225px",
@@ -44,11 +43,11 @@ const MovieCard = ({ movie }: MovieCardProps) => {
       />
 
       <Box sx={{ pt: 1, px: 1 }}>
-        <Typography sx={{ fontWeight: "bold", lineHeight: "1.2", mb: 0.5 }}>
+        <Typography sx={{ fontWeight: "bold", lineHeight: "1.2", mb: 0.5, fontSize: "0.9rem" }}>
           {movie.title || movie.name}
         </Typography>
-        <Typography sx={{ color: "gray" }}>
-          {movie.release_date || movie.first_air_date}
+        <Typography sx={{ color: "gray", fontSize: "0.8rem" }}>
+          {movie.release_date || movie.first_air_date || (movie.known_for_department)}
         </Typography>
       </Box>
     </Box>
