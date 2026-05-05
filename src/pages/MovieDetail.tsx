@@ -9,6 +9,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 
+interface Genre {
+  id: number;
+  name: string;
+}
+
 const MovieDetail = () => {
   const { id, type } = useParams();
   const sessionId = localStorage.getItem("tmdb_session_id");
@@ -126,7 +131,7 @@ const MovieDetail = () => {
             <Typography>{data.release_date || data.first_air_date}</Typography>
             <Typography>•</Typography>
             <Typography>
-              {data.genres?.map((g: any) => g.name).join(", ")}
+              {data.genres?.map((g: Genre) => g.name).join(", ")}
             </Typography>
             <Typography>•</Typography>
             <Typography>

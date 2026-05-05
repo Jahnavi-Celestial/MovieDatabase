@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppBar, Button, Box, InputBase, Menu, MenuItem, Toolbar } from "@mui/material";
 import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import { useMovieContext } from "../context/MovieContext";
 import { getAccountDetails } from "../api/tmdb"; 
@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 const Navbar = () => {
   const { searchQuery, setSearchQuery, showSearch, setShowSearch } = useMovieContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [localSearch, setLocalSearch] = useState("");
+  const location = useLocation();
   
   const openMenu = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -37,10 +39,24 @@ const Navbar = () => {
   };
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-    if (e.key === "Enter" && searchQuery.trim() !== "") {
-      navigate(`/serachDetail/:${searchQuery}`);
+    if (e.key === "Enter" && localSearch.trim() !== "") {
+      setSearchQuery(localSearch)
+      navigate(`/serachDetail/:${localSearch}`);
     }
   }
+
+  useEffect(() => {
+    if (searchQuery) {
+      setLocalSearch(searchQuery);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setLocalSearch(""); 
+      setSearchQuery("");
+    }
+  }, [location.pathname,setSearchQuery]);
 
   return (
     <>
@@ -100,8 +116,8 @@ const Navbar = () => {
             fullWidth
             autoFocus
             placeholder="Search for a movie, tv show, person..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             sx={{ padding: "10px 40px", fontSize: "1.1rem", fontStyle: "italic", color: "#333" }}
           />

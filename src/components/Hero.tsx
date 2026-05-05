@@ -2,19 +2,21 @@ import { Box, Button, InputBase, Typography } from "@mui/material";
 import hero from "../assets/hero.jpg";
 import { useNavigate } from "react-router-dom";
 import { useMovieContext } from "../context/MovieContext";
+import {useState} from "react";
 
 const Hero = () => {
-  const {searchQuery, setSearchQuery, setShowSearch} = useMovieContext();
+  const {setSearchQuery, setShowSearch} = useMovieContext();
+  const [localHeroSearch, setLocalHeroSearch] = useState("");
   const navigate = useNavigate();
 
   const handleSearch = () => {
-      setSearchQuery(searchQuery);
+      setSearchQuery(localHeroSearch);
       setShowSearch(true)
-      navigate(`/serachDetail/${searchQuery}`);
+      navigate(`/serachDetail/${localHeroSearch}`);
   };
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
-    if (e.key === "Enter" && searchQuery.trim() !== "") {
+    if (e.key === "Enter" && localHeroSearch.trim() !== "") {
       handleSearch()
     }
   }
@@ -58,8 +60,8 @@ const Hero = () => {
         <InputBase
           fullWidth
           placeholder="Search for a movie..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={localHeroSearch}
+          onChange={(e) => setLocalHeroSearch(e.target.value)}
           onKeyDown={handleKeyDown}
         />
         <Button

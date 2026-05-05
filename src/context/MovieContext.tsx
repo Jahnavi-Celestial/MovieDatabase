@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useContext, createContext, useState, type ReactNode } from 'react';
 
 interface MovieContextType {
   timeWindow: 'day' | 'week';
@@ -11,7 +11,7 @@ interface MovieContextType {
   setShowSearch: (val: boolean) => void
 }
 
-const MovieContext = createContext<MovieContextType | undefined>(undefined);
+export const MovieContext = createContext<MovieContextType | undefined>(undefined);
 
 export const MovieProvider = ({ children }: { children: ReactNode }) => {
   const [timeWindow, setTimeWindow] = useState<'day' | 'week'>('day');

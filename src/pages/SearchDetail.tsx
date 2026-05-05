@@ -17,7 +17,7 @@ const SearchDetail = () => {
     placeholderData: (previousData) => previousData, 
   });
 
-  const handleChange = (e: React.ChangeEvent<unknown>, value: number) => {
+  const handleChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
 
